@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeApi ASY5131</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+        }
+        #main-content {
+            flex: 1;
+        }
+        #pokemon-info {
+            margin-top: 20px;
+        }
+        .info-item {
+            margin: 10px 0;
+        }
+        img {
+            max-width: 200px;
+        }
+        #pokemon-list {
+            margin-left: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+            flex: 1;
+        }
+        #pokemon-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #pokemon-list li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-content">
+        <h1>Pokemon</h1>
+        <label for="pokemon-name">Ingrese el nombre o id del pokemon</label>
+        <input type="text" id="pokemon-name">
+        <button onclick="getPokemonInfo()">Obtener informacion</button>
+
+        <div id="pokemon-info"></div>
+    </div>
+
+    <div id="pokemon-list">
+        <h2>Lista de Pokémon</h2>
+        <ul id="pokemon-list-items"></ul>
+    </div>
+
+    <script>
+        async function getPokemonInfo() {
+            const pokemonName = document.getElementById('pokemon-name').value.toLowerCase();
+            const url = `https://pokeapi.co/api/v2/pokemon/${pokemonName}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Pokémon not found');
+                }
+                const data = await response.json();
+                
+                displayPokemonInfo(data);
+            } catch (error) {
+                document.getElementById('pokemon-info').innerHTML = `<p>${error.message}</p>`;
+            }
+        }
+
+        function displayPokemonInfo(data) {
+            const pokemonInfoDiv = document.getElementById('pokemon-info');
+            pokemonInfoDiv.innerHTML = `
+                <div class="info-item"><strong>Nombre:</strong> ${data.name}</div>
+                <div class="info-item"><strong>ID:</strong> ${data.id}</div>
+                <div class="info-item"><strong>Altura:</strong> ${data.height}</div>
+                <div class="info-item"><strong>Peso:</strong> ${data.weight}</div>
+                <div class="info-item"><strong>Tipo:</strong> ${data.types.map(typeInfo => typeInfo.type.name).join(', ')}</div>
+                <div class="info-item"><img src="${data.sprites.front_default}" alt="${data.name}"></div>
+            `;
+        }
+
+        async function fetchPokemonList() {
+            const url = `https://pokeapi.co/api/v2/pokemon?limit=1000`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Pokémon list');
+                }
+                const data = await response.json();
+                displayPokemonList(data.results);
+            } catch (error) {
+                document.getElementById('pokemon-list').innerHTML = `<p>${error.message}</p>`;
+            }
+        }
+
+        function displayPokemonList(pokemonList) {
+            const pokemonListItems = document.getElementById('pokemon-list-items');
+            pokemonListItems.innerHTML = '';
+            pokemonList.forEach((pokemon, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${index + 1}. ${pokemon.name}`;
+                pokemonListItems.appendChild(listItem);
+            });
+        }
+        
+        fetchPokemonList();
+    </script>
+</body>
+</html>
